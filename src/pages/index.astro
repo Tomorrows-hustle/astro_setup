@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content'
+import Card from '../components/Card.astro'
+import Hero from '../components/Hero.astro'
+import DefaultLayout from '../layouts/DefaultLayout.astro'
+const publishedBlogEntries = await getCollection('posts', ({ data }) => {
+  return data.published == true
+})
+publishedBlogEntries.sort((a, b) => new Date(b.data.pubDate) - new Date(a.data.pubDate))
+---
+
+<DefaultLayout title="Home">
+  <Hero />
+  <section class="my-16">
+    <div class="container">
+      <h2 class="mb-16 text-6xl">Posts</h2>
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+        {
+          publishedBlogEntries.slice(0, 3).map((post) => (
+            <div class="feature flex flex-col gap-4">
+              <Card
+                url={'/blog/' + post.slug.split('/').slice(1).join('/')}
+                title={post.data.title}
+                footer={''}
+                img={post.data.image?.url}
+              >
+                {post.data.description}
+              </Card>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</DefaultLayout>

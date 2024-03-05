@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content'
+import Card from '../../components/Card.astro'
+import Hero from '../../components/Hero.astro'
+import DefaultLayout from '../../layouts/DefaultLayout.astro'
+import { Pagination } from 'accessible-astro-components'
+
+export async function getStaticPaths({ paginate }) {
+  const publishedBlogEntries = await getCollection('posts', ({ data }) => {
+    return data.published == true
+  })
+  return paginate(publishedBlogEntries, { pageSize: 6 })
+}
+
+const { page } = Astro.props
+---
+
+<DefaultLayout title="Blog" description="Tomorrows Hustle - Your way to success and financial independence">
+  <section class="my-12">
+    <div class="space-content container">
+      <h1>Blog</h1>
+      <p class="text-2xl">
+        Insights, thoughts and ideas that I come across in my journey as an entrepreneur and developer.
+      </p>
+    </div>
+  </section>
+  <section class="my-12">
+    <div class="container">
+      <p class="text-sm"><em>Post {page.start + 1} through {page.end + 1} of {page.total} total posts</em></p>
+      <ul class="my-3">
+        {
+          page.data.map((post) => (
+            <li>
+              <Card url={'/blog/' + post.slug.split('/').slice(1).join('/')} title={post.data.title} footer={''}>
+                {post.data.description}
+              </Card>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-12 grid place-content-center">
+        <Pagination
+          firstPage={page.url.prev ? '/blog' : null}
+          previousPage={page.url.prev ? page.url.prev : null}
+          nextPage={page.url.next ? page.url.next : null}
+          lastPage={page.url.next ? `/blog/${Math.round(page.total / page.size)}` : null}
+          currentPage={page.currentPage}
+          totalPages={Math.round(page.total / page.size)}
+        />
+      </div>
+    </div>
+  </section>
+</DefaultLayout>
+
+<style lang="scss">
+  ul {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 4rem;
+
+    @media (min-width: 550px) {
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 2rem;
+    }
+
+    @media (min-width: 950px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
